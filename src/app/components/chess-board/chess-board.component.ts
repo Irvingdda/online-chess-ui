@@ -53,7 +53,6 @@ export class ChessBoardComponent {
 
   placePiecesOnBoard() {
     for(let pieceId of Object.keys(this.pieces)) {
-      debugger;
       let piece = this.pieces[pieceId];
       this.board[piece.row - 1][piece.column - 1] = piece.id;
     }
@@ -179,7 +178,6 @@ export class ChessBoardComponent {
     while( this.canMoveToTarget(piece, actualRow, actualColumn) ) {
       movementsAllowed.push({row: actualRow, column: actualColumn});
       if(this.isTargetEnemy(piece,actualRow, actualColumn)) break;
-      debugger;
       actualRow = actualRow + rowStep;
       actualColumn = actualColumn + columnStep;
     }
