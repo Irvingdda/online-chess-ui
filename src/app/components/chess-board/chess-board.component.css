@@ -1,0 +1,170 @@
+#board {
+    width: 800px;
+    height: 800px;
+    background-image: url(../../../assets/board.png);
+    background-size: contain;
+    position: relative;
+}
+
+@media only screen and (max-width: 800px) {
+    #board {
+        width: 100vw;
+        height: 100vw;
+    }
+}
+
+.piece {
+    width: 100px;
+    height: 100px;
+    position: absolute;
+    background-size: contain;
+}
+
+
+.hint {
+    box-sizing: border-box;
+    width: 100px;
+    height: 100px;
+    position: absolute;
+    border: solid 2px #000;
+    background-color: rgba(120, 120, 120, .3);
+}
+
+
+/* .row-1 {
+    top: 0;
+}
+.row-2 {
+    top: 100px;
+}
+.row-3 {
+    top: 200px;
+}
+.row-4 {
+    top: 300px;
+}
+.row-5 {
+    top: 400px;
+}
+.row-6 {
+    top: 500px;
+}
+.row-7 {
+    top: 600px;
+}
+.row-8 {
+    top: 700px;
+}
+
+.column-1 {
+    left: 0;
+}
+.column-2 {
+    left: 100px;
+}
+.column-3 {
+    left: 200px;
+}
+.column-4 {
+    left: 300px;
+}
+.column-5 {
+    left: 400px;
+}
+.column-6 {
+    left: 500px;
+}
+.column-7 {
+    left: 600px;
+}
+.column-8 {
+    left: 700px;
+} */
+
+.row-8 {
+    top: 0;
+}
+.row-7 {
+    top: 100px;
+}
+.row-6 {
+    top: 200px;
+}
+.row-5 {
+    top: 300px;
+}
+.row-4 {
+    top: 400px;
+}
+.row-3 {
+    top: 500px;
+}
+.row-2 {
+    top: 600px;
+}
+.row-1 {
+    top: 700px;
+}
+
+.column-1 {
+    left: 0;
+}
+.column-2 {
+    left: 100px;
+}
+.column-3 {
+    left: 200px;
+}
+.column-4 {
+    left: 300px;
+}
+.column-5 {
+    left: 400px;
+}
+.column-6 {
+    left: 500px;
+}
+.column-7 {
+    left: 600px;
+}
+.column-8 {
+    left: 700px;
+}
+
+.black-bishop {
+    background-image: url(../../../assets/black_bishop.png);
+}
+.black-rook {
+    background-image: url(../../../assets/black_rook.png);
+}
+.black-pawn {
+    background-image: url(../../../assets/black_pawn.png);
+}
+.black-knight {
+    background-image: url(../../../assets/black_knight.png);
+}
+.black-queen {
+    background-image: url(../../../assets/black_queen.png);
+}
+.black-king {
+    background-image: url(../../../assets/black_king.png);
+}
+
+.white-bishop {
+    background-image: url(../../../assets/white_bishop.png);
+}
+.white-rook {
+    background-image: url(../../../assets/white_rook.png);
+}
+.white-pawn {
+    background-image: url(../../../assets/white_pawn.png);
+}
+.white-knight {
+    background-image: url(../../../assets/white_knight.png);
+}
+.white-queen {
+    background-image: url(../../../assets/white_queen.png);
+}
+.white-king {
+    background-image: url(../../../assets/white_king.png);
+}

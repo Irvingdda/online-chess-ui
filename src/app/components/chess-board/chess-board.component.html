@@ -1,0 +1,16 @@
+<div id="board">
+    @for(piece of pieces | keyvalue ; track piece) {
+        <div class="piece"
+        draggable="true"
+        (dragstart)="showPossibleMoves(piece.value)"
+        [class]="buildPieceClass(piece.value)"></div>
+    }
+    @for(hint of highligthedSquares; track hint.id) {
+        <div class="hint"
+        (drop)="moveSelectedPiece(hint)"
+        (dragover)="$event.preventDefault()"
+        [class]="buildHintClass(hint)"
+        >
+        </div>
+    }
+</div>
