@@ -1,4 +1,4 @@
-<div id="board">
+<div id="board" [class]="turn == 'black' ? 'white' : 'black'">
     @for(piece of pieces | keyvalue ; track piece) {
         <div class="piece"
         draggable="true"
