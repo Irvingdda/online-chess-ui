@@ -34,6 +34,8 @@ export class ChessBoardComponent {
   highligthedSquares: Hint[] = [];
   selectedPiece: Piece | null = null;
   turn: "white" | "black" = "white";
+  boardSimulation: Board | null = null;
+  simulatedPieces: {[key: string]: Piece} | null = null;
 
   constructor() {
     this.pieces = {};
@@ -66,7 +68,7 @@ export class ChessBoardComponent {
   }
 
   getWhitePieces(): Piece[] {
-    let pieceOrder = "rook,knight,bishop,queen,king,bishop,knight,rook";
+    let pieceOrder = "rook,knight,bishop,king,queen,bishop,knight,rook";
     let countColumn = 0;
     let pawns: Piece[] = [];
 
@@ -90,7 +92,7 @@ export class ChessBoardComponent {
     return whitePieces;
   }
   getBlackPieces(): Piece[] {
-    let pieceOrder = "rook,knight,bishop,queen,king,bishop,knight,rook";
+    let pieceOrder = "rook,knight,bishop,king,queen,bishop,knight,rook";
     let columnCount = 8;
     let pawns: Piece[] = [];
 
@@ -127,7 +129,7 @@ export class ChessBoardComponent {
     return classes;
   }
 
-  getPiecePossibleMoves(piece: Piece, simulatedBoard?: Board): Position[] {
+  getPiecePossibleMoves(piece: Piece): Position[] {
     let possibleMoves: Position[] = [];
 
     switch(piece.name) {
@@ -162,8 +164,7 @@ export class ChessBoardComponent {
   showPossibleMoves(piece: Piece) {
     if(this.selectedPiece == piece || this.turn != piece.team) return;
     this.selectedPiece = piece;
-    let highligthedMoves:Position[] = [];
-    
+    let highligthedMoves:Position[] = this.getPiecePossibleMoves(piece);
     let i = 0;
     highligthedMoves = highligthedMoves.filter((pos: Position) => !this.movementLeadsToCheck(piece, pos));
     this.highligthedSquares = highligthedMoves.map((pos) => ({id: ++i, ...pos}));
@@ -174,23 +175,44 @@ export class ChessBoardComponent {
       .find((pieceId) => 
         this.pieces[pieceId].name == "king" &&
         this.pieces[pieceId].team == piece.team)
-    
-    
-    return false;
+    if(!allyKingId) return false;
+    let allyKing = {...this.pieces[allyKingId]};
+    if(piece.name == "king") {
+      allyKing.column = pos.column;
+      allyKing.row = pos.row;
+    }
+    // Setting boardSimulation with possible next move to check if this movement accordingly prevent ally check
+    this.boardSimulation = [];
+    this.simulatedPieces = JSON.parse(JSON.stringify(this.pieces));
+    this.board.forEach(row => this.boardSimulation?.push([...row]));
+    this.boardSimulation[piece.row -1][piece.column -1] = null;
+    let target = this.boardSimulation[pos.row -1][pos.column -1];
+    if(target != null && this.simulatedPieces) {
+      delete this.simulatedPieces[target];
+    }
+    this.boardSimulation[pos.row -1][pos.column -1] = piece.id;
+
+    let willKingBeUnderAttack = false;
+    for(let k in this.simulatedPieces) {
+      if(this.simulatedPieces[k].team != piece.team) {
+        willKingBeUnderAttack = this.getPiecePossibleMoves(this.simulatedPieces[k])
+          .findIndex((pos) => pos.row == allyKing.row && pos.column == allyKing.column) != -1;
+
+        if(willKingBeUnderAttack) break;
+      }
+    }
+
+    this.boardSimulation = null;
+    this.simulatedPieces = null;
+
+    return willKingBeUnderAttack;
   }
-
-  isPieceUnderAttack(piece: Piece):boolean {
-
-    return false;
-  }
-
   
   moveSelectedPiece(hint: Hint) {
     if(this.selectedPiece) {
       let enemyPieceId = this.board[hint.row-1][hint.column-1];
       if(enemyPieceId)  {
         delete this.pieces[enemyPieceId];
-        this.board[hint.row-1][hint.column-1] = null;
       }
       this.board[this.selectedPiece.row-1][this.selectedPiece.column-1] = null;
       let newPiece = {
@@ -312,28 +334,32 @@ export class ChessBoardComponent {
     return allMovements.filter(m => this.canMoveToTarget(piece, m.row, m.column));
   }
 
-  canMoveToTarget(piece:Piece, targetRow:number, targetColumn:number) :boolean {
-    if(targetRow > 8 || targetColumn > 8 || targetRow < 1 || targetColumn < 1) return false;
-    return !this.isTargetAlly(piece, targetRow, targetColumn);
+  canMoveToTarget(piece:Piece, row:number, column:number) :boolean {
+    if(row > 8 || column > 8 || row < 1 || column < 1) return false;
+    return !this.isTargetAlly(piece, row, column);
   }
 
   isTargetAlly(piece: Piece, targetRow: number, targetColumn: number): boolean {
+    let board = this.boardSimulation || this.board;
+    let pieces = this.simulatedPieces || this.pieces;
     
-    let targetSquare = this.board[targetRow - 1][targetColumn - 1];
+    let targetSquare = board[targetRow - 1][targetColumn - 1];;
     let targetIsAlly = false;
+      
+    targetIsAlly = !!targetSquare && pieces[piece.id].team == pieces[targetSquare].team;
     
-    targetIsAlly = !!targetSquare && this.pieces[piece.id].team == this.pieces[targetSquare].team;
-
     return targetIsAlly;
   }
 
   isTargetEnemy(piece: Piece, targetRow: number, targetColumn: number): boolean {
-    let targetSquare = this.board[targetRow - 1][targetColumn - 1];
+    let board = this.boardSimulation || this.board;
+    let pieces = this.simulatedPieces || this.pieces;
+
+    let targetSquare = board[targetRow - 1][targetColumn - 1];
+    
     let targetIsEnemy = false;
 
-    if(targetSquare) {
-      targetIsEnemy = this.pieces[targetSquare].team != piece.team;
-    }
+    targetIsEnemy = !!targetSquare && pieces[targetSquare].team != piece.team;
 
     return targetIsEnemy;
   }
