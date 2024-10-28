@@ -319,9 +319,6 @@ export class ChessBoardComponent {
       if(enemyPieceId)  {
         delete this.pieces[enemyPieceId];
       }
-      //Kill running pawn en passant move
-      
-
 
       this.board[this.selectedPiece.row-1][this.selectedPiece.column-1] = null;
       let newPiece = {
@@ -333,49 +330,7 @@ export class ChessBoardComponent {
       this.pieces[this.selectedPiece.id] = newPiece;
       this.board[newPiece.row-1][newPiece.column-1] = newPiece.id;
 
-      if(hint.enPassant && this.runningPawn) {
-        this.board[this.runningPawn.row-1][this.runningPawn.column-1] = null;
-        delete this.pieces[this.runningPawn.id];
-      }
-
-      //If a pawn makes a double jump mark it to allow it to be taken en passant
-      if(hint.isSpecial && newPiece.name == "pawn") {
-        this.runningPawn = newPiece;
-      } else {
-        this.runningPawn = null;
-      }
-
-      //Move rook on castle
-      if(hint.isCastle) {
-        let rook = this.board[7][hint.column-1];
-        this.board[7][hint.column-1] = null;
-        this.board[hint.row-1][hint.column-1] = rook;
-        rook && (this.pieces[rook].hasMove = true);
-      }
-
-      //Move rook on castle to the other side
-      if(hint.isCastleReverse) {
-        debugger;
-        let rook = this.board[hint.row-1][0];
-        this.board[hint.row-1][0] = null;
-        this.board[hint.row-1][hint.column] = rook;
-        if(rook) {
-          this.pieces[rook].hasMove = true;
-          this.pieces[rook].column = hint.column+1;
-        }
-      }
-
-      //Move rook on castle
-      if(hint.isCastle) {
-        debugger;
-        let rook = this.board[hint.row-1][7];
-        this.board[hint.row-1][7] = null;
-        this.board[hint.row-1][hint.column-2] = rook;
-        if(rook) {
-          this.pieces[rook].hasMove = true;
-          this.pieces[rook].column = hint.column-1;
-        }
-      }
+      this.performSpecialMoves(hint, newPiece);
 
       this.selectedPiece = null;
       this.highligthedSquares = [];
@@ -384,6 +339,56 @@ export class ChessBoardComponent {
 
       this.turn = this.turn == "black" ? "white" : "black";
       this.calculateAllPossibleNextMoves();
+    }
+  }
+
+  performSpecialMoves(hint: Position, newPiece: Piece) {
+    if(hint.enPassant && this.runningPawn) {
+      this.board[this.runningPawn.row-1][this.runningPawn.column-1] = null;
+      delete this.pieces[this.runningPawn.id];
+    }
+
+    //If a pawn makes a double jump mark it to allow it to be taken en passant
+    if(hint.isSpecial && newPiece.name == "pawn") {
+      this.runningPawn = newPiece;
+    } else {
+      this.runningPawn = null;
+    }
+
+    //Move rook on castle
+    if(hint.isCastle) {
+      let rook = this.board[7][hint.column-1];
+      this.board[7][hint.column-1] = null;
+      this.board[hint.row-1][hint.column-1] = rook;
+      rook && (this.pieces[rook].hasMove = true);
+    }
+
+    //Move rook on castle to the other side
+    if(hint.isCastleReverse) {
+      let rook = this.board[hint.row-1][0];
+      this.board[hint.row-1][0] = null;
+      this.board[hint.row-1][hint.column] = rook;
+      if(rook) {
+        this.pieces[rook].hasMove = true;
+        this.pieces[rook].column = hint.column+1;
+      }
+    }
+
+    //Move rook on castle
+    if(hint.isCastle) {
+      let rook = this.board[hint.row-1][7];
+      this.board[hint.row-1][7] = null;
+      this.board[hint.row-1][hint.column-2] = rook;
+      if(rook) {
+        this.pieces[rook].hasMove = true;
+        this.pieces[rook].column = hint.column-1;
+      }
+    }
+
+    if(newPiece.name == "pawn") {
+      if((newPiece.team == "white" && newPiece.row == 8) || (newPiece.team == "black" && newPiece.row == 1)) {
+        newPiece.name = "queen";
+      }
     }
   }
 
