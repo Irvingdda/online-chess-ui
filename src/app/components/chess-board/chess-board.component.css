@@ -56,28 +56,28 @@
     left: 700px;
 }
 
-.black .row-8 {
+.white .row-8 {
     top: 0;
 }
-.black .row-7 {
+.white .row-7 {
     top: 100px;
 }
-.black .row-6 {
+.white .row-6 {
     top: 200px;
 }
-.black .row-5 {
+.white .row-5 {
     top: 300px;
 }
-.black .row-4 {
+.white .row-4 {
     top: 400px;
 }
-.black .row-3 {
+.white .row-3 {
     top: 500px;
 }
-.black .row-2 {
+.white .row-2 {
     top: 600px;
 }
-.black .row-1 {
+.white .row-1 {
     top: 700px;
 }
 
@@ -108,28 +108,28 @@
 
 
 
-.white .row-1 {
+.black .row-1 {
     top: 0;
 }
-.white .row-2 {
+.black .row-2 {
     top: 100px;
 }
-.white .row-3 {
+.black .row-3 {
     top: 200px;
 }
-.white .row-4 {
+.black .row-4 {
     top: 300px;
 }
-.white .row-5 {
+.black .row-5 {
     top: 400px;
 }
-.white .row-6 {
+.black .row-6 {
     top: 500px;
 }
-.white .row-7 {
+.black .row-7 {
     top: 600px;
 }
-.white .row-8 {
+.black .row-8 {
     top: 700px;
 }
 

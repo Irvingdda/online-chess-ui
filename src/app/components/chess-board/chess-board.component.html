@@ -1,4 +1,4 @@
-<div id="board" [class]="turn == 'black' ? 'white' : 'black'">
+<div id="board" [class]="playerColor != '' ? playerColor : turn">
     @for(piece of pieces | keyvalue ; track piece) {
         <div class="piece"
         draggable="true"
@@ -7,7 +7,7 @@
     }
     @for(hint of highligthedSquares; track hint.id) {
         <div class="hint"
-        (drop)="moveSelectedPiece(hint)"
+        (drop)="move(hint)"
         (dragover)="$event.preventDefault()"
         [class]="buildHintClass(hint)"
         >

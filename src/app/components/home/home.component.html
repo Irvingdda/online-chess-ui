@@ -1,1 +1,5 @@
-<app-chess-board></app-chess-board>
+<input type="text" [formControl]="nicknameForm" [disabled]="nicknameHasBeenSet">
+<button (click)="connect()"[disabled]="nicknameHasBeenSet">Connect</button>
+@if(nicknameHasBeenSet) {
+    <app-matchmaking></app-matchmaking>
+}

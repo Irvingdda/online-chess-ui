@@ -1,6 +1,10 @@
 <nav>
   <ul>
-    <li [class.selected]="selectedItem == 'home'" draggable="true"><a routerLink="home">Play</a></li>
+    @for (item of items; track $index) {
+      <li [class.selected]="selectedItem == item.id">
+        <a [routerLink]="[item.id]"> {{item.desc}} </a>
+      </li>
+    }
   </ul>
 </nav>
 <router-outlet />

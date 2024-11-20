@@ -6,19 +6,19 @@ ul {
     padding: 0;
 
     display:flex;
+    justify-content: space-around;
     gap: 5px;
     font-family: sans-serif;
-    font-size: 15px;
-    background: #373A40;
-    color: #FFF;
+    font-size: 20px;
+    color: #121212;
 }
 
 li {
     padding: 10px;
     align-items: center;
+    color: #000;
 }
 
 li.selected {
-    background: #DC5F00;
-    color: #fff;
+    text-decoration: underline;
 }

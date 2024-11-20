@@ -1,30 +1,9 @@
 import { KeyValuePipe } from '@angular/common';
-import { Component } from '@angular/core';
-type PieceName = "pawn" | "king" | "queen" | "rook" | "bishop" | "knight";
-type Team = "black" | "white";
+import { Component, Input } from '@angular/core';
+import { GameServiceService } from '../../game-service.service';
+import { Board, Game, Hint, Move, Piece, Position } from '../../types/types';
+import { hintToMove, moveToHint } from '../../types/utils';
 
-type Position = { 
-  column: number;
-  row: number;
-  isSpecial?: boolean;
-  enPassant?: boolean;
-  isCastle?: boolean;
-  isCastleReverse?: boolean;
-}
-type Piece = {
-  hasMove?: boolean;
-  id: number;
-  name: string | PieceName;
-  team: string | Team;
-  nextMoves: Position[];
-} & Position
-
-type Square = number | null;
-type Board = Square[][];
-
-type Hint = {
-  id: number;
-} & Position
 
 @Component({
   selector: 'app-chess-board',
@@ -34,6 +13,12 @@ type Hint = {
   styleUrl: './chess-board.component.css'
 })
 export class ChessBoardComponent {
+  defProps = {
+    isCastle: false, 
+    isCastleReverse: false, 
+    isSpecial: false, 
+    enPassant: false
+  }
   onCheck: null | 'white' | 'black' = null;
   counter = 0;
   pieces: {[key: string]: Piece};
@@ -45,8 +30,19 @@ export class ChessBoardComponent {
   simulatedPieces: {[key: string]: Piece} | null = null;
   runningPawn: null | Piece = null;
   enPassantTake = false;
+  @Input() playerColor: string = "";
+  @Input() game: Game = {id:0, whiteId: "", blackId: ""};
 
-  constructor() {
+  constructor(private gameService: GameServiceService) {
+
+    this.gameService.moveData.subscribe((moveInfo: any) => {
+      console.log("move info", moveInfo);
+      
+      let move = JSON.parse(moveInfo.body);
+      this.selectedPiece = this.pieces[move.pieceId];
+      this.moveSelectedPiece(moveToHint(move));
+    })
+
     this.pieces = {};
 
     this.buildWhitePieces()
@@ -82,12 +78,13 @@ export class ChessBoardComponent {
   }
 
   buildWhitePieces(): Piece[] {
-    let pieceOrder = "rook,knight,bishop,king,queen,bishop,knight,rook";
+    let pieceOrder = "rook,knight,bishop,queen,king,bishop,knight,rook";
     let countColumn = 0;
     let pawns: Piece[] = [];
 
     for(let i = 0; i < 8; i++) {
       pawns.push({
+        ...this.defProps,
         id: ++this.counter,
         row: 2,
         column: i+1,
@@ -98,24 +95,26 @@ export class ChessBoardComponent {
     }
 
     let whitePieces: Piece[] = pieceOrder.split(",").map((pieceName: string)=> ({
+      ...this.defProps,
       id: ++this.counter,
       row: 1,
       column: ++countColumn,
       name: pieceName,
       team: "white",
-      nextMoves: []
+      nextMoves: [],
     }));
 
     return whitePieces.concat(pawns);
   }
 
   buildBlackPieces(): Piece[] {
-    let pieceOrder = "rook,knight,bishop,king,queen,bishop,knight,rook";
+    let pieceOrder = "rook,knight,bishop,queen,king,bishop,knight,rook";
     let columnCount = 8;
     let pawns: Piece[] = [];
 
     for(let i = 0; i < 8; i++) {
       pawns.push({
+        ...this.defProps,
         id: ++this.counter,
         row: 7,
         column: i+1,
@@ -127,6 +126,7 @@ export class ChessBoardComponent {
 
     let blackPieces: Piece[] = pieceOrder.split(",")
       .map((pieceName: string)=> ({
+        ...this.defProps,
         id: ++this.counter,
         row: 8,
         column: columnCount--,
@@ -182,11 +182,13 @@ export class ChessBoardComponent {
 
   showPossibleMoves(piece: Piece) {
     if(this.selectedPiece == piece || this.turn != piece.team) return;
+    if (this.playerColor != "" && this.playerColor != piece.team) return;
+
     this.selectedPiece = piece;
     //let highligthedMoves:Position[] = this.getPiecePossibleMoves(piece);
     //highligthedMoves = highligthedMoves.filter((pos: Position) => !this.movementLeadsToCheck(piece, pos));
     let i = 0;
-    this.highligthedSquares = piece.nextMoves.map((pos) => ({id: ++i, ...pos}));
+    this.highligthedSquares = piece.nextMoves.map((pos) => ({id: ++i, ...pos, pieceId: piece.id}));
   }
 
   calculateAllPossibleNextMoves() {
@@ -312,6 +314,18 @@ export class ChessBoardComponent {
 
     return this.isSquareUnderAttack(king.row, king.column);
   }
+
+  move(hint: Hint) {
+    console.log("making move");
+    
+    if(this.playerColor != "") {
+      this.gameService.performMove(hintToMove(hint, this.game.id, this.gameService.nickname)).subscribe((moveInfo: any) => {
+        console.log("made move");
+        
+      });
+    }
+    this.moveSelectedPiece(hint);
+  }
   
   moveSelectedPiece(hint: Hint) {
     if(this.selectedPiece) {
@@ -337,7 +351,7 @@ export class ChessBoardComponent {
 
       
 
-      this.turn = this.turn == "black" ? "white" : "black";
+      this.switchTurn();
       this.calculateAllPossibleNextMoves();
     }
   }
@@ -398,7 +412,11 @@ export class ChessBoardComponent {
     let actualColumn = piece.column + columnStep;
     //Move to an empty square indefinetelly in one direction or stop at an enemy piece
     while( this.canMoveToTarget(piece.team, actualRow, actualColumn) ) {
-      movementsAllowed.push({row: actualRow, column: actualColumn});
+      movementsAllowed.push({
+        ...this.defProps,
+        row: actualRow, 
+        column: actualColumn,
+      });
       if(this.isTargetEnemy(piece.team,actualRow, actualColumn)) break;
       actualRow = actualRow + rowStep;
       actualColumn = actualColumn + columnStep;
@@ -460,45 +478,45 @@ export class ChessBoardComponent {
 
   getPawnPossibleNextMoves(piece: Piece): Position[] {
     let allMovements: Position[];
-
+    
     if(piece.team == "white") {
       allMovements = [
-        {column: piece.column, row: piece.row + 1}
+        {...this.defProps, column: piece.column, row: piece.row + 1}
       ]
       if(piece.row == 2) {
-        allMovements.push({column: piece.column, row: piece.row+2, isSpecial: true});
+        allMovements.push({...this.defProps, column: piece.column, row: piece.row+2, isSpecial: true});
       }
       if(this.isTargetEnemy(piece.team, piece.row + 1, piece.column+1)) {
-        allMovements.push({column: piece.column+1, row: piece.row+1});
+        allMovements.push({...this.defProps, column: piece.column+1, row: piece.row+1});
       }
       if(this.isTargetEnemy(piece.team, piece.row + 1, piece.column-1)) {
-        allMovements.push({column: piece.column-1, row: piece.row+1});
+        allMovements.push({...this.defProps, column: piece.column-1, row: piece.row+1});
       }
       if(this.runningPawn && this.runningPawn.row == piece.row && this.runningPawn.column == piece.column + 1) {
-        allMovements.push({column: piece.column+1, row: piece.row+1, enPassant: true});
+        allMovements.push({...this.defProps, column: piece.column+1, row: piece.row+1, enPassant: true});
       }
       if(this.runningPawn && this.runningPawn.row == piece.row && this.runningPawn.column == piece.column - 1) {
-        allMovements.push({column: piece.column-1, row: piece.row+1, enPassant: true});
+        allMovements.push({...this.defProps, column: piece.column-1, row: piece.row+1, enPassant: true});
       }
     } else {
 
       allMovements = [
-        {column: piece.column, row: piece.row - 1}
+        {...this.defProps, column: piece.column, row: piece.row - 1}
       ]
       if(piece.row == 7) {
-        allMovements.push({column: piece.column, row: piece.row-2, isSpecial: true});
+        allMovements.push({...this.defProps, column: piece.column, row: piece.row-2, isSpecial: true});
       }
       if(this.isTargetEnemy(piece.team, piece.row - 1, piece.column+1)) {
-        allMovements.push({column: piece.column+1, row: piece.row-1});
+        allMovements.push({...this.defProps, column: piece.column+1, row: piece.row-1});
       }
       if(this.isTargetEnemy(piece.team, piece.row - 1, piece.column-1)) {
-        allMovements.push({column: piece.column-1, row: piece.row-1});
+        allMovements.push({...this.defProps, column: piece.column-1, row: piece.row-1});
       }
       if(this.runningPawn && this.runningPawn.row == piece.row && this.runningPawn.column == piece.column + 1) {
-        allMovements.push({column: piece.column+1, row: piece.row-1, enPassant: true});
+        allMovements.push({...this.defProps, column: piece.column+1, row: piece.row-1, enPassant: true});
       }
       if(this.runningPawn && this.runningPawn.row == piece.row && this.runningPawn.column == piece.column - 1) {
-        allMovements.push({column: piece.column-1, row: piece.row-1, enPassant: true});
+        allMovements.push({...this.defProps, column: piece.column-1, row: piece.row-1, enPassant: true});
       }
 
     }
@@ -513,23 +531,23 @@ export class ChessBoardComponent {
    */
   getKingPossibleNextMoves(piece: Piece): Position[] {
     let allMovements: Position[] = [
-      {column: piece.column+1, row: piece.row +1},
-      {column: piece.column+1, row: piece.row -1},
-      {column: piece.column+1, row: piece.row},
-      {column: piece.column, row: piece.row -1},
-      {column: piece.column, row: piece.row +1},
-      {column: piece.column-1, row: piece.row +1},
-      {column: piece.column-1, row: piece.row -1},
-      {column: piece.column-1, row: piece.row},
+      {...this.defProps, column: piece.column+1, row: piece.row +1},
+      {...this.defProps, column: piece.column+1, row: piece.row -1},
+      {...this.defProps, column: piece.column+1, row: piece.row},
+      {...this.defProps, column: piece.column, row: piece.row -1},
+      {...this.defProps, column: piece.column, row: piece.row +1},
+      {...this.defProps, column: piece.column-1, row: piece.row +1},
+      {...this.defProps, column: piece.column-1, row: piece.row -1},
+      {...this.defProps, column: piece.column-1, row: piece.row},
     ]
 
     if(!piece.hasMove) {
       if(this.isKingAbleToCastle(piece)) {
-        allMovements.push({column: piece.column+2, row: piece.row, isCastle: true});
+        allMovements.push({...this.defProps,column: piece.column+2, row: piece.row, isCastle: true});
       }
 
       if(this.isKingAbleToCastleToTheOtherSide(piece)) {
-        allMovements.push({column: piece.column-2, row: piece.row, isCastleReverse: true});
+        allMovements.push({...this.defProps,column: piece.column-2, row: piece.row, isCastleReverse: true});
       }
     }
 
@@ -593,17 +611,17 @@ export class ChessBoardComponent {
 
   getKnightPossibleNextMoves(piece: Piece): Position[] {
     let allMovements: Position[] = [
-      {column: piece.column+2, row: piece.row+1},
-      {column: piece.column+2, row: piece.row-1},
+      {...this.defProps,column: piece.column+2, row: piece.row+1},
+      {...this.defProps,column: piece.column+2, row: piece.row-1},
       
-      {column: piece.column-2, row: piece.row+1},
-      {column: piece.column-2, row: piece.row-1},
+      {...this.defProps,column: piece.column-2, row: piece.row+1},
+      {...this.defProps,column: piece.column-2, row: piece.row-1},
 
-      {column: piece.column+1, row: piece.row+2},
-      {column: piece.column-1, row: piece.row+2},
+      {...this.defProps,column: piece.column+1, row: piece.row+2},
+      {...this.defProps,column: piece.column-1, row: piece.row+2},
       
-      {column: piece.column+1, row: piece.row-2},
-      {column: piece.column-1, row: piece.row-2},
+      {...this.defProps,column: piece.column+1, row: piece.row-2},
+      {...this.defProps,column: piece.column-1, row: piece.row-2},
     ]
 
     return allMovements.filter(m => this.canMoveToTarget(piece.team, m.row, m.column));
