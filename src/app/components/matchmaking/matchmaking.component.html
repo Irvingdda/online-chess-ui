@@ -1,4 +1,7 @@
-<button class="play" (click)="play()">Play</button>
-@if (game) {
-    <app-chess-board [playerColor]="game.whiteId == nickname ? 'white' : 'black'" [game]="game"></app-chess-board>
-}
+<div class="matchmaking">
+    @if (game) {
+        <app-chess-board [playerColor]="game.whiteId == nickname ? 'white' : 'black'" [game]="game"></app-chess-board>
+    } @else {
+        <button class="play" (click)="play()">Play</button>
+    }
+</div>

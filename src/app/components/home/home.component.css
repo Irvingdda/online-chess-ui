@@ -1,0 +1,19 @@
+input[type=text] {
+    padding: 5px;
+    font-size: 25px;
+    border-radius: 10px;
+    border: 1px solid #4a4a4a;
+    text-align: center;
+}
+
+form {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    gap: 5px;
+}
+
+p {
+    text-align: center;
+}

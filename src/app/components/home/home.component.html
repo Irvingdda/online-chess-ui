@@ -1,5 +1,9 @@
-<input type="text" [formControl]="nicknameForm" [disabled]="nicknameHasBeenSet">
-<button (click)="connect()"[disabled]="nicknameHasBeenSet">Connect</button>
 @if(nicknameHasBeenSet) {
+    <p> Playing as <b>{{nicknameForm.value}}</b></p>
     <app-matchmaking></app-matchmaking>
+} @else {
+    <form>
+        <input type="text" [formControl]="nicknameForm">
+        <button (click)="connect()">Connect</button>
+    </form>
 }
