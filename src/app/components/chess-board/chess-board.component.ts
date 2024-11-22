@@ -147,7 +147,10 @@ export class ChessBoardComponent {
   }
 
   buildHintClass(hint: Hint): string {
-    let classes = `column-${hint.column} row-${hint.row} hint`;
+    let classes = `column-${hint.column} row-${hint.row} hint `;
+    if(this.isTargetEnemy(this.pieces[hint.pieceId].team, hint.row, hint.column)) {
+      classes += 'target'
+    }
     return classes;
   }
 

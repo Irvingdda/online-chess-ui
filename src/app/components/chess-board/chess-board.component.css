@@ -71,10 +71,28 @@
     width: 100px;
     height: 100px;
     position: absolute;
-    border: solid 2px #000;
-    background-color: rgba(120, 120, 120, .3);
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
+.target {
+    background-color: rgba(255, 0, 0, .1);
+}
+
+.target .bullet {
+    width: 70%;
+    height: 70%;
+    background-color: transparent;
+    border: 8px solid rgba(0, 0, 0, 0.50);
+}
+
+.bullet {
+    width: 30%;
+    height: 30%;
+    border-radius: 50%;
+    background-color: rgba(0, 0, 0, 0.50);
+}
 
 
 @media only screen and (max-width: 800px) {
@@ -137,12 +155,6 @@
         width: calc(100vw / 8);
         height: calc(100vw / 8);
     }
-}
-
-@media only screen and (max-width: 800px) {
-    
-    
-    
 }
 
 
