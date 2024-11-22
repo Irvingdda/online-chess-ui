@@ -9,6 +9,7 @@ import { RouterModule, RouterOutlet } from '@angular/router';
   styleUrl: './app.component.css'
 })
 export class AppComponent {
+  
   title = 'online-chess-ui';
   selectedItem = 'home'
   items = [

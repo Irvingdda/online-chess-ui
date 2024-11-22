@@ -1,5 +1,5 @@
 import { KeyValuePipe } from '@angular/common';
-import { Component, Input } from '@angular/core';
+import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { GameServiceService } from '../../game-service.service';
 import { Board, Game, Hint, Move, Piece, Position } from '../../types/types';
 import { hintToMove, moveToHint } from '../../types/utils';
@@ -32,6 +32,7 @@ export class ChessBoardComponent {
   enPassantTake = false;
   @Input() playerColor: string = "";
   @Input() game: Game = {id:0, whiteId: "", blackId: ""};
+  @Output() onGameOver: EventEmitter<Game> = new EventEmitter<Game>();
 
   constructor(private gameService: GameServiceService) {
 

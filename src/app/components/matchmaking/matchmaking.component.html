@@ -1,6 +1,11 @@
 <div class="matchmaking">
     @if (game) {
-        <app-chess-board [playerColor]="game.whiteId == nickname ? 'white' : 'black'" [game]="game"></app-chess-board>
+        <app-chess-board 
+            [playerColor]="game.whiteId == nickname ? 'white' : 'black'"
+            [game]="game"
+            (onGameOver)="gameOver()"
+            ></app-chess-board>
+        <button class="resign" (click)="resign()">Resign</button>
     } @else {
         <button class="play" (click)="play()">Play</button>
     }

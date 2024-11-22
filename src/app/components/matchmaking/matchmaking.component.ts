@@ -20,10 +20,25 @@ export class MatchmakingComponent {
       console.log('game data', gameInfo);
       
       this.game = JSON.parse(gameInfo.body);
+    });
+    this.gameService.resignData.subscribe((userId: any) => {
+      alert(userId + 'has resigned. You won!')
+      this.gameOver();
     })
   }
 
   play() {
     this.gameService.play();
+  }
+
+  resign() {
+    if(this.game) {
+      this.gameService.resignGame(this.game.id);
+    }
+    this.gameOver();
+  }
+
+  gameOver() {
+    this.game = null;
   }
 }

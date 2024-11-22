@@ -14,6 +14,7 @@ export class GameServiceService {
   url: string = "http://localhost:8080";
   private gameSubject = new Subject<Game>();
   private moveSubject = new Subject<Move>();
+  private gameSurrenderSubject = new Subject<String>();
   constructor(private http: HttpClient) {}
 
   get gameData() {
@@ -22,6 +23,10 @@ export class GameServiceService {
 
   get moveData() {
     return this.moveSubject.asObservable();
+  }
+
+  get resignData() {
+    return this.gameSurrenderSubject.asObservable();
   }
 
   connect () {
@@ -41,6 +46,9 @@ export class GameServiceService {
       console.log("move has been made :", moveInfo);
       this.moveSubject.next(moveInfo);
     });
+    this.socketClient.subscribe(`/user/${this.nickname}/queue/surrender`, (userId: string) =>{
+      this.gameSurrenderSubject.next(userId);
+    })
   }
 
   unsuscribeToActualQueue() {
@@ -73,6 +81,12 @@ export class GameServiceService {
 
   get game( ): Observable<Game> {
     return this.gameSubject.asObservable();
+  }
+
+  resignGame(gameId: number) {
+    this.http.get(`${this.url}/surrender/${this.nickname}/${gameId}`).subscribe(() => {
+      console.log("User has resigned");
+    })
   }
 } import { Game, Move } from './types/types';
 

@@ -3,12 +3,14 @@
         <div class="piece"
         draggable="true"
         (dragstart)="showPossibleMoves(piece.value)"
+        (click)="showPossibleMoves(piece.value)"
         [class]="buildPieceClass(piece.value)"></div>
     }
     @for(hint of highligthedSquares; track hint.id) {
         <div class="hint"
         (drop)="move(hint)"
         (dragover)="$event.preventDefault()"
+        (click)="move(hint)"
         [class]="buildHintClass(hint)"
         >
         </div>
