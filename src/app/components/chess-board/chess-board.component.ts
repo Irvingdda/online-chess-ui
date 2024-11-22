@@ -257,6 +257,11 @@ export class ChessBoardComponent {
     return willKingBeUnderAttack;
   }
 
+  isSquareEmpty(row: number, column: number): boolean {
+    let board = this.boardSimulation || this.board;
+    return board[row-1][column-1] == null;
+  }
+
   isSquareUnderAttack(row: number, column: number) {
     let team = this.turn;
     let isSquareUnderAttack = false;
@@ -500,10 +505,12 @@ export class ChessBoardComponent {
     let allMovements: Position[];
     
     if(piece.team == "white") {
-      allMovements = [
-        {...this.defProps, column: piece.column, row: piece.row + 1}
-      ]
-      if(piece.row == 2) {
+      allMovements = [];
+
+      if(this.isSquareEmpty(piece.row+1, piece.column)) {
+        allMovements.push({...this.defProps, column: piece.column, row: piece.row + 1})
+      }
+      if(piece.row == 2 && this.isSquareEmpty(piece.row+1, piece.column) && this.isSquareEmpty(piece.row+2, piece.column)) {
         allMovements.push({...this.defProps, column: piece.column, row: piece.row+2, isSpecial: true});
       }
       if(this.isTargetEnemy(piece.team, piece.row + 1, piece.column+1)) {
@@ -519,13 +526,15 @@ export class ChessBoardComponent {
         allMovements.push({...this.defProps, column: piece.column-1, row: piece.row+1, enPassant: true});
       }
     } else {
-
       allMovements = [
-        {...this.defProps, column: piece.column, row: piece.row - 1}
       ]
-      if(piece.row == 7) {
+      if(this.isSquareEmpty(piece.row-1, piece.column)) {
+        allMovements.push({...this.defProps, column: piece.column, row: piece.row - 1})
+      }
+      if(piece.row == 7 && this.isSquareEmpty(piece.row-1, piece.column) && this.isSquareEmpty(piece.row-2, piece.column)) {
         allMovements.push({...this.defProps, column: piece.column, row: piece.row-2, isSpecial: true});
       }
+      
       if(this.isTargetEnemy(piece.team, piece.row - 1, piece.column+1)) {
         allMovements.push({...this.defProps, column: piece.column+1, row: piece.row-1});
       }
