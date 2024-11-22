@@ -1,7 +1,7 @@
 import { KeyValuePipe } from '@angular/common';
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { GameServiceService } from '../../game-service.service';
-import { Board, Game, Hint, Move, Piece, Position } from '../../types/types';
+import { Board, Game, Hint, Move, Piece, Position, Sound } from '../../types/types';
 import { hintToMove, moveToHint } from '../../types/utils';
 
 
@@ -30,6 +30,8 @@ export class ChessBoardComponent {
   simulatedPieces: {[key: string]: Piece} | null = null;
   runningPawn: null | Piece = null;
   enPassantTake = false;
+  nextSoundToBeEmmited: Sound = 'move';
+
   @Input() playerColor: string = "";
   @Input() game: Game = {id:0, whiteId: "", blackId: ""};
   @Output() onGameOver: EventEmitter<Game> = new EventEmitter<Game>();
@@ -195,14 +197,18 @@ export class ChessBoardComponent {
   calculateAllPossibleNextMoves() {
     let movementCount = 0;
     let playerInTurnPieces = Object.keys(this.pieces).filter(k => this.pieces[k].team == this.turn);
+    let isKingInCheck = this.isKingInCheck();
     playerInTurnPieces.forEach(key => {
       let piece = this.pieces[key];
       let nextMoves = this.getPiecePossibleMoves(piece);
       piece.nextMoves = nextMoves.filter((pos: Position) => !this.movementLeadsToCheck(piece, pos));
       movementCount += piece.nextMoves.length;
     });
+    if(isKingInCheck) {
+      this.nextSoundToBeEmmited = "check";
+    }
     if(movementCount == 0) {
-      if(this.isKingInCheck()) {
+      if(isKingInCheck) {
         alert(this.turn + " has lost the game");
       } else {
         alert("Stalemate")
@@ -330,8 +336,10 @@ export class ChessBoardComponent {
   
   moveSelectedPiece(hint: Hint) {
     if(this.selectedPiece) {
+      this.nextSoundToBeEmmited = "move";
       let enemyPieceId = this.board[hint.row-1][hint.column-1];
       if(enemyPieceId)  {
+        this.nextSoundToBeEmmited = "capture";
         delete this.pieces[enemyPieceId];
       }
 
@@ -350,17 +358,21 @@ export class ChessBoardComponent {
       this.selectedPiece = null;
       this.highligthedSquares = [];
 
-      
-
       this.switchTurn();
       this.calculateAllPossibleNextMoves();
+      this.performSoundEffect();
     }
+  }
+
+  performSoundEffect() {
+    new Audio(`../../../assets/${this.nextSoundToBeEmmited}.mp3`).play();
   }
 
   performSpecialMoves(hint: Position, newPiece: Piece) {
     if(hint.enPassant && this.runningPawn) {
       this.board[this.runningPawn.row-1][this.runningPawn.column-1] = null;
       delete this.pieces[this.runningPawn.id];
+      this.nextSoundToBeEmmited = "capture";
     }
 
     //If a pawn makes a double jump mark it to allow it to be taken en passant
@@ -371,12 +383,13 @@ export class ChessBoardComponent {
     }
 
     //Move rook on castle
-    if(hint.isCastle) {
+    /* if(hint.isCastle) {
       let rook = this.board[7][hint.column-1];
       this.board[7][hint.column-1] = null;
       this.board[hint.row-1][hint.column-1] = rook;
       rook && (this.pieces[rook].hasMove = true);
-    }
+      this.nextSoundToBeEmmited = "castle";
+    } */
 
     //Move rook on castle to the other side
     if(hint.isCastleReverse) {
@@ -387,6 +400,7 @@ export class ChessBoardComponent {
         this.pieces[rook].hasMove = true;
         this.pieces[rook].column = hint.column+1;
       }
+      this.nextSoundToBeEmmited = "castle";
     }
 
     //Move rook on castle
@@ -398,11 +412,13 @@ export class ChessBoardComponent {
         this.pieces[rook].hasMove = true;
         this.pieces[rook].column = hint.column-1;
       }
+      this.nextSoundToBeEmmited = "castle";
     }
 
     if(newPiece.name == "pawn") {
       if((newPiece.team == "white" && newPiece.row == 8) || (newPiece.team == "black" && newPiece.row == 1)) {
         newPiece.name = "queen";
+        this.nextSoundToBeEmmited = "promote";
       }
     }
   }

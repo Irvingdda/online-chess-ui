@@ -43,3 +43,5 @@ export type Hint = {
     pieceId: number;
     id: number;
 } & Position
+
+export type Sound = "move" | "capture" | "check" | "castle" | "promote"
